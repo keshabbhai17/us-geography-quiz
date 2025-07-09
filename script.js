@@ -20,16 +20,16 @@ document.addEventListener("DOMContentLoaded", () => {
       type: "checkbox",
       label: "3. Select all states that border Canada:",
       options: [
-        {label: "Michigan", correct: true},
-        {label: "Nevada", correct: false},
-        {label: "Montana", correct: true}
+        { label: "Michigan", correct: true },
+        { label: "Nevada", correct: false },
+        { label: "Montana", correct: true }
       ],
       id: "q3"
     },
     {
       type: "select",
       label: "4. Which U.S. state has the most lakes?",
-      options: ["Alaska", "Minnesota", "Michigan", "California"],
+      options: ["Select...", "Minnesota", "Alaska", "California", "Michigan"],
       correct: "Alaska",
       id: "q4"
     },
@@ -46,9 +46,10 @@ document.addEventListener("DOMContentLoaded", () => {
       id: "q6"
     },
     {
-      type: "text",
+      type: "dropdown",
       label: "7. Which U.S. state is the smallest by area?",
-      correct: "rhode island",
+      options: ["Select...", "Rhode Island", "Connecticut", "Delaware", "New Jersey"],
+      correct: "Rhode Island",
       id: "q7"
     },
     {
@@ -62,16 +63,17 @@ document.addEventListener("DOMContentLoaded", () => {
       type: "checkbox",
       label: "9. Select all U.S. territories:",
       options: [
-        {label: "Guam", correct: true},
-        {label: "Puerto Rico", correct: true},
-        {label: "Hawaii", correct: false}
+        { label: "Guam", correct: true },
+        { label: "Puerto Rico", correct: true },
+        { label: "Hawaii", correct: false }
       ],
       id: "q9"
     },
     {
-      type: "text",
+      type: "select",
       label: "10. What is the northernmost U.S. state?",
-      correct: "alaska",
+      options: ["Select...", "Alaska", "North Dakota", "Washington", "Montana"],
+      correct: "Alaska",
       id: "q10"
     }
   ];
@@ -91,7 +93,7 @@ document.addEventListener("DOMContentLoaded", () => {
       wrapper.className = "mb-3";
 
       const label = document.createElement("label");
-      label.className = "form-label";
+      label.className = "form-label fw-bold";
       label.textContent = q.label;
       wrapper.appendChild(label);
 
@@ -120,7 +122,7 @@ document.addEventListener("DOMContentLoaded", () => {
               <label class="form-check-label" for="${optId}">${opt.label}</label>
             </div>`;
         });
-      } else if (q.type === "select") {
+      } else if (q.type === "select" || q.type === "dropdown") {
         const select = document.createElement("select");
         select.className = "form-select";
         select.id = q.id;
@@ -132,21 +134,35 @@ document.addEventListener("DOMContentLoaded", () => {
         });
         wrapper.appendChild(select);
       } else if (q.type === "range") {
-        const range = document.createElement("input");
-        range.type = "range";
-        range.className = "form-range";
-        range.min = 10;
-        range.max = 50;
-        range.value = 30;
-        range.id = q.id;
-        const rangeVal = document.createElement("div");
-        rangeVal.textContent = "Selected: 30 million";
-        range.addEventListener("input", () => {
-          rangeVal.textContent = "Selected: " + range.value + " million";
-        });
-        wrapper.appendChild(range);
-        wrapper.appendChild(rangeVal);
-      }
+  const rangeWrapper = document.createElement("div");
+  rangeWrapper.className = "d-flex align-items-center gap-3";
+
+  const range = document.createElement("input");
+  range.type = "range";
+  range.className = "form-range flex-grow-1";
+  range.min = 10;
+  range.max = 50;
+  range.value = 30;
+  range.id = q.id;
+
+  const rangeVal = document.createElement("span");
+  rangeVal.textContent = "Selected: 30 million";
+
+  // Add dynamic background fill
+  const updateRangeBackground = () => {
+    const percent = ((range.value - 10) / 40) * 100;
+    range.style.background = `linear-gradient(to right, #0d6efd ${percent}%, #dee2e6 ${percent}%)`;
+    rangeVal.textContent = `Selected: ${range.value} million`;
+  };
+
+  range.addEventListener("input", updateRangeBackground);
+  updateRangeBackground(); // Initialize
+
+  rangeWrapper.appendChild(range);
+  rangeWrapper.appendChild(rangeVal);
+  wrapper.appendChild(rangeWrapper);
+}
+
 
       const feedback = document.createElement("div");
       feedback.id = q.id + "-feedback";
@@ -163,8 +179,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
       if (q.type === "text" || q.type === "number") {
         const val = document.getElementById(q.id).value.trim().toLowerCase();
-        correct = (val == q.correct.toString().toLowerCase());
-      } else if (q.type === "select") {
+        correct = (val === q.correct.toString().toLowerCase());
+      } else if (q.type === "select" || q.type === "dropdown") {
         const val = document.getElementById(q.id).value;
         correct = (val === q.correct);
       } else if (q.type === "radio") {
@@ -181,11 +197,12 @@ document.addEventListener("DOMContentLoaded", () => {
       }
 
       if (correct) {
-        feedback.innerHTML = `<span class="feedback-icon correct">✓ Correct</span>`;
-        score += 10;
-      } else {
-        feedback.innerHTML = `<span class="feedback-icon incorrect">❌ Incorrect</span>`;
-      }
+  feedback.innerHTML = `<img src="https://cdn-icons-png.flaticon.com/512/845/845646.png" alt="Correct" width="20" class="me-2"> <span class="text-success">Correct</span>`;
+  score += 10;
+} else {
+  feedback.innerHTML = `<img src="https://cdn-icons-png.flaticon.com/512/1828/1828665.png" alt="Incorrect" width="20" class="me-2"> <span class="text-danger">Incorrect</span>`;
+}
+
     });
 
     document.getElementById("scoreArea").innerHTML = `<h4>Your Score: ${score}/100</h4>`;
